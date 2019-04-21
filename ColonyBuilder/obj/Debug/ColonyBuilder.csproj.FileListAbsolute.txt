@@ -1,0 +1,10 @@
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\bin\Debug\ColonyBuilder.exe.config
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\bin\Debug\ColonyBuilder.exe
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\bin\Debug\ColonyBuilder.pdb
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\obj\Debug\ColonyBuilder.csprojAssemblyReference.cache
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\obj\Debug\ColonyBuilder.Form1.resources
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\obj\Debug\ColonyBuilder.Properties.Resources.resources
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\obj\Debug\ColonyBuilder.csproj.GenerateResource.cache
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\obj\Debug\ColonyBuilder.csproj.CoreCompileInputs.cache
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\obj\Debug\ColonyBuilder.exe
+C:\Users\pxh8242\Documents\Paul\Projects\ColonyBuilder\ColonyBuilder\ColonyBuilder\obj\Debug\ColonyBuilder.pdb
