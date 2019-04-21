@@ -13,14 +13,16 @@ namespace ColonyBuilder.GameCode.GameObjects
 
         public Sprite(Color imageColor)
         {
-            this.imageColor = imageColor;
+            this.ImageColor = imageColor;
         }
+
+        public Color ImageColor { get => imageColor; set => imageColor = value; }
 
         public void Render(Graphics graphics, double x, double y, int width, int height, double rotation)
         {
-            Brush brush = new SolidBrush(imageColor);
+            Pen brush = new Pen(ImageColor, 2);
             Rectangle myRectangle = new Rectangle((int)x, (int)y, width, height);
-            graphics.FillRectangle(brush, myRectangle);
+            graphics.DrawRectangle(brush, myRectangle);
         }
     }
 }

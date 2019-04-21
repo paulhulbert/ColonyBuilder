@@ -23,46 +23,46 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
 
         public Order CurrentOrder { get => currentOrder; set => currentOrder = value; }
 
-        public void evaluate()
+        public void Evaluate()
         {
             testCounter++;
 
-            if (CurrentOrder.Move == Constants.Direction.East && testCounter > 7)
+            if (CurrentOrder.Move == Constants.Direction.East && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.SouthEast, "Moving SouthEast");
                 testCounter = 0;
             }
-            if (CurrentOrder.Move == Constants.Direction.SouthEast && testCounter > 3)
+            if (CurrentOrder.Move == Constants.Direction.SouthEast && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.South, "Moving South");
                 testCounter = 0;
             }
-            if (CurrentOrder.Move == Constants.Direction.South && testCounter > 3)
+            if (CurrentOrder.Move == Constants.Direction.South && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.SouthWest, "Moving SouthWest");
                 testCounter = 0;
             }
-            if (CurrentOrder.Move == Constants.Direction.SouthWest && testCounter > 3)
+            if (CurrentOrder.Move == Constants.Direction.SouthWest && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.West, "Moving West");
                 testCounter = 0;
             }
-            if (CurrentOrder.Move == Constants.Direction.West && testCounter > 3)
+            if (CurrentOrder.Move == Constants.Direction.West && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.NorthWest, "Moving NorthWest");
                 testCounter = 0;
             }
-            if (CurrentOrder.Move == Constants.Direction.NorthWest && testCounter > 3)
+            if (CurrentOrder.Move == Constants.Direction.NorthWest && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.North, "Moving North");
                 testCounter = 0;
             }
-            if (CurrentOrder.Move == Constants.Direction.North && testCounter > 3)
+            if (CurrentOrder.Move == Constants.Direction.North && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.NorthEast, "Moving NorthEast");
                 testCounter = 0;
             }
-            if (CurrentOrder.Move == Constants.Direction.NorthEast && testCounter > 3)
+            if (CurrentOrder.Move == Constants.Direction.NorthEast && testCounter > 1)
             {
                 CurrentOrder = new Order(Constants.Direction.East, "Moving East");
                 testCounter = 0;

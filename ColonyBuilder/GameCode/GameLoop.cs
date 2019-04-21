@@ -46,10 +46,6 @@ namespace ColonyBuilder.GameCode
 
         public void Render(Graphics graphics)
         {
-            Pen myPen = new Pen(System.Drawing.Color.Green, 5);
-            Rectangle myRectangle = new Rectangle(20 + testCounter / 2, 20, 450, 450);
-            graphics.DrawEllipse(myPen, myRectangle);
-
             gameState.Render(graphics);
         }
     }

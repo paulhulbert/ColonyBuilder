@@ -16,12 +16,15 @@ namespace ColonyBuilder.GameCode
 
         public GameState()
         {
-            AddTile(100, 100);
-            AddTile(150, 100);
-            AddTile(100, 150);
-            AddTile(150, 150);
+            for (int i = 0; i < 20; i++)
+            {
+                for (int j = 0; j < 20; j++)
+                {
+                    AddTile(50 * i, 50 * j);
+                }
+            }
 
-            Character testCharacter = new Character(new Location(100, 100), this);
+            Character testCharacter = new Character(new Location(500, 300), this);
             AddCharacter(testCharacter);
         }
 

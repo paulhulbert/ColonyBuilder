@@ -24,15 +24,19 @@ namespace ColonyBuilder.GameCode.GameObjects
 
         private bool IsCharacterOnTile()
         {
-            int currentX = (int)Location.X;
-            int currentY = (int)Location.Y;
+            return (Location.X % 50 == 0 && Location.Y % 50 == 0);
+        }
 
-            return (currentX % 50 == 0 && currentY % 50 == 0);
+        private void LockToTile()
+        {
+
         }
 
         private void FollowMoveOrder(int timeDifference)
         {
             Constants.Direction direction = basicAI.CurrentOrder.Move;
+
+            Location startingLocation = new Location(Location.X, Location.Y);
 
             if (direction == Constants.Direction.East)
             {
@@ -71,13 +75,58 @@ namespace ColonyBuilder.GameCode.GameObjects
                 Location.Y += ((double)timeDifference / 1000) * 100 / 1.4;
             }
 
+
+            if (startingLocation.X % 50 != 0 || startingLocation.Y % 50 != 0)
+            {
+                if ((Math.Abs(startingLocation.X % 50 - Location.X % 50) > 25) || (Math.Abs(startingLocation.Y % 50 - Location.Y % 50) > 25))
+                {
+                    Location.X = ((int)Math.Round(Location.X / 50.0)) * 50;
+                    Location.Y = ((int)Math.Round(Location.Y / 50.0)) * 50;
+                    Console.WriteLine(startingLocation + " --- " + Location + " -- Snapped XY");
+                }
+            }
+
+
+            
         }
 
         public void Update(int timeDifference)
         {
             if (IsCharacterOnTile())
             {
-                basicAI.evaluate();
+                basicAI.Evaluate();
+                if (basicAI.CurrentOrder.Move == Constants.Direction.East)
+                {
+                    Sprite.ImageColor = Color.Blue;
+                }
+                if (basicAI.CurrentOrder.Move == Constants.Direction.West)
+                {
+                    Sprite.ImageColor = Color.Red;
+                }
+                if (basicAI.CurrentOrder.Move == Constants.Direction.North)
+                {
+                    Sprite.ImageColor = Color.Yellow;
+                }
+                if (basicAI.CurrentOrder.Move == Constants.Direction.South)
+                {
+                    Sprite.ImageColor = Color.Purple;
+                }
+                if (basicAI.CurrentOrder.Move == Constants.Direction.NorthEast)
+                {
+                    Sprite.ImageColor = Color.Gray;
+                }
+                if (basicAI.CurrentOrder.Move == Constants.Direction.NorthWest)
+                {
+                    Sprite.ImageColor = Color.Brown;
+                }
+                if (basicAI.CurrentOrder.Move == Constants.Direction.SouthEast)
+                {
+                    Sprite.ImageColor = Color.Aqua;
+                }
+                if (basicAI.CurrentOrder.Move == Constants.Direction.SouthWest)
+                {
+                    Sprite.ImageColor = Color.Pink;
+                }
             }
 
             if (basicAI.CurrentOrder.Type == Order.OrderType.Move)
