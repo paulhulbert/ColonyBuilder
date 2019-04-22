@@ -24,6 +24,11 @@ namespace ColonyBuilder.GameCode.Util
         {
             return "(" + X + ", " + Y + ")";
         }
+
+        public override bool Equals(object obj)
+        {
+            return ((Location)obj).X == X && ((Location)obj).Y == Y;
+        }
     }
 
 

@@ -20,9 +20,11 @@ namespace ColonyBuilder.GameCode.GameObjects
 
         public void Render(Graphics graphics, double x, double y, int width, int height, double rotation)
         {
-            Pen brush = new Pen(ImageColor, 2);
+            Brush brush = new SolidBrush(ImageColor);
             Rectangle myRectangle = new Rectangle((int)x, (int)y, width, height);
-            graphics.DrawRectangle(brush, myRectangle);
+            graphics.FillRectangle(brush, myRectangle);
+            Pen pen = new Pen(Color.Black, 2);
+            graphics.DrawRectangle(pen, myRectangle);
         }
     }
 }

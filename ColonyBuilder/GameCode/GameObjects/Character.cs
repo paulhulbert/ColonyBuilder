@@ -27,9 +27,20 @@ namespace ColonyBuilder.GameCode.GameObjects
             return (Location.X % 50 == 0 && Location.Y % 50 == 0);
         }
 
-        private void LockToTile()
+        /**
+         * This code checks to see if it has just hit a new tile, and if so, it locks it to that tile.
+         * 
+         */
+        private void LockToTile(Location startingLocation)
         {
-
+            if (startingLocation.X % 50 != 0 || startingLocation.Y % 50 != 0)
+            {
+                if ((Math.Abs(startingLocation.X % 50 - Location.X % 50) > 25) || (Math.Abs(startingLocation.Y % 50 - Location.Y % 50) > 25))
+                {
+                    Location.X = ((int)Math.Round(Location.X / 50.0)) * 50;
+                    Location.Y = ((int)Math.Round(Location.Y / 50.0)) * 50;
+                }
+            }
         }
 
         private void FollowMoveOrder(int timeDifference)
@@ -75,18 +86,7 @@ namespace ColonyBuilder.GameCode.GameObjects
                 Location.Y += ((double)timeDifference / 1000) * 100 / 1.4;
             }
 
-
-            if (startingLocation.X % 50 != 0 || startingLocation.Y % 50 != 0)
-            {
-                if ((Math.Abs(startingLocation.X % 50 - Location.X % 50) > 25) || (Math.Abs(startingLocation.Y % 50 - Location.Y % 50) > 25))
-                {
-                    Location.X = ((int)Math.Round(Location.X / 50.0)) * 50;
-                    Location.Y = ((int)Math.Round(Location.Y / 50.0)) * 50;
-                    Console.WriteLine(startingLocation + " --- " + Location + " -- Snapped XY");
-                }
-            }
-
-
+            LockToTile(startingLocation);
             
         }
 

@@ -53,10 +53,12 @@
     </Compile>
     <Compile Include="GameCode\GameObjects\AI\BasicAI.cs" />
     <Compile Include="GameCode\GameObjects\AI\Interaction.cs" />
+    <Compile Include="GameCode\GameObjects\AI\MappingNode.cs" />
     <Compile Include="GameCode\GameObjects\AI\Order.cs" />
     <Compile Include="GameCode\GameObjects\Character.cs" />
     <Compile Include="GameCode\GameObjects\Team.cs" />
     <Compile Include="GameCode\GameObjects\Tile.cs" />
+    <Compile Include="GameCode\GameObjects\Wall.cs" />
     <Compile Include="GameCode\GameState.cs" />
     <Compile Include="GameCode\Util\Constants.cs" />
     <Compile Include="GameCode\GameLoop.cs" />

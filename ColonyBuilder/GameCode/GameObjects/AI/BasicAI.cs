@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ColonyBuilder.GameCode.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,9 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
         private GameState gameState;
         private Order currentOrder;
 
-        private int testCounter = 0;
+        Location testGoal1 = new Location(200, 200);
+        Location testGoal2 = new Location(800, 400);
+        bool goingToTestGoal1 = false;
 
         public BasicAI(Character character, GameState gameState)
         {
@@ -25,48 +28,116 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
 
         public void Evaluate()
         {
-            testCounter++;
+            //foreach (Constants.Direction dir in FindPathFromTo(testGoal1, testGoal2))
+            //{
+            //    Console.Write(dir + ", ");
+            //}
+            //Console.WriteLine();
 
-            if (CurrentOrder.Move == Constants.Direction.East && testCounter > 1)
+            if (character.Location.Equals(testGoal1) && goingToTestGoal1)
             {
-                CurrentOrder = new Order(Constants.Direction.SouthEast, "Moving SouthEast");
-                testCounter = 0;
+                goingToTestGoal1 = false;
             }
-            if (CurrentOrder.Move == Constants.Direction.SouthEast && testCounter > 1)
+            if (character.Location.Equals(testGoal2) && !goingToTestGoal1)
             {
-                CurrentOrder = new Order(Constants.Direction.South, "Moving South");
-                testCounter = 0;
+                goingToTestGoal1 = true;
             }
-            if (CurrentOrder.Move == Constants.Direction.South && testCounter > 1)
-            {
-                CurrentOrder = new Order(Constants.Direction.SouthWest, "Moving SouthWest");
-                testCounter = 0;
-            }
-            if (CurrentOrder.Move == Constants.Direction.SouthWest && testCounter > 1)
-            {
-                CurrentOrder = new Order(Constants.Direction.West, "Moving West");
-                testCounter = 0;
-            }
-            if (CurrentOrder.Move == Constants.Direction.West && testCounter > 1)
-            {
-                CurrentOrder = new Order(Constants.Direction.NorthWest, "Moving NorthWest");
-                testCounter = 0;
-            }
-            if (CurrentOrder.Move == Constants.Direction.NorthWest && testCounter > 1)
-            {
-                CurrentOrder = new Order(Constants.Direction.North, "Moving North");
-                testCounter = 0;
-            }
-            if (CurrentOrder.Move == Constants.Direction.North && testCounter > 1)
-            {
-                CurrentOrder = new Order(Constants.Direction.NorthEast, "Moving NorthEast");
-                testCounter = 0;
-            }
-            if (CurrentOrder.Move == Constants.Direction.NorthEast && testCounter > 1)
+
+
+            Location goal = goingToTestGoal1 ? testGoal1 : testGoal2;
+            
+            CurrentOrder = new Order(FindPathFromTo(character.Location, goal)[0], "Moving East");
+            return;
+
+            if (goal.X > character.Location.X)
             {
                 CurrentOrder = new Order(Constants.Direction.East, "Moving East");
-                testCounter = 0;
+                return;
             }
+            if (goal.X < character.Location.X)
+            {
+                CurrentOrder = new Order(Constants.Direction.West, "Moving West");
+                return;
+            }
+            if (goal.Y < character.Location.Y)
+            {
+                CurrentOrder = new Order(Constants.Direction.North, "Moving North");
+                return;
+            }
+            if (goal.Y > character.Location.Y)
+            {
+                CurrentOrder = new Order(Constants.Direction.South, "Moving South");
+                return;
+            }
+        }
+
+        private List<Constants.Direction> FindPathFromTo(Location from, Location to)
+        {
+            List<Constants.Direction> directions = new List<Constants.Direction>();
+            MappingNode lastNode = null;
+            Dictionary<Tile, MappingNode> paths = new Dictionary<Tile, MappingNode>();
+            paths.Add(gameState.GetTile(from), new MappingNode(null, Constants.Direction.East));
+            List<Tile> tilesToSearch = new List<Tile>();
+            tilesToSearch.Add(gameState.GetTile(from));
+
+            while (lastNode == null || GetPathDistance(paths, lastNode) > tilesToSearch.Select(tile =>
+            {
+                if (paths.ContainsKey(tile)) {
+                    return GetPathDistance(paths, paths[tile]);
+                } else
+                {
+                    return 99999999;
+                }
+            }).Min())
+            {
+                List<Tile> newTilesToSearch = new List<Tile>();
+                foreach (Tile tile in tilesToSearch)
+                {
+                    if (tile.Location.Equals(to))
+                    {
+                        lastNode = paths[tile];
+                        break;
+                    }
+                    foreach (Constants.Direction adjacentDirection in tile.AdjacentTiles.Keys)
+                    {
+                        if (paths.ContainsKey(tile.AdjacentTiles[adjacentDirection]))
+                        {
+                            if (GetPathDistance(paths, paths[tile]) + (Constants.IsDiagonal(adjacentDirection) ? 1.4 : 1.0) < GetPathDistance(paths, paths[tile.AdjacentTiles[adjacentDirection]]))
+                            {
+                                paths[tile.AdjacentTiles[adjacentDirection]].previousTile = tile;
+                                paths[tile.AdjacentTiles[adjacentDirection]].previousMove = adjacentDirection;
+                            }
+                        }
+                        else
+                        {
+                            paths.Add(tile.AdjacentTiles[adjacentDirection], new MappingNode(tile, adjacentDirection));
+                            newTilesToSearch.Add(tile.AdjacentTiles[adjacentDirection]);
+                        }
+                    }
+                }
+                tilesToSearch = newTilesToSearch;
+            }
+
+            while (lastNode.previousTile != null)
+            {
+                directions.Add(lastNode.previousMove);
+                lastNode = paths[lastNode.previousTile];
+            }
+            directions.Reverse();
+            return directions;
+        }
+
+        private double GetPathDistance(Dictionary<Tile, MappingNode> paths, MappingNode node)
+        {
+            double total = 0;
+
+            while (node.previousTile != null)
+            {
+                total += Constants.IsDiagonal(node.previousMove) ? 1.4 : 1.0;
+                node = paths[node.previousTile];
+            }
+
+            return total;
         }
     }
 }

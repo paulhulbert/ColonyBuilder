@@ -21,8 +21,13 @@ namespace ColonyBuilder.GameCode
                 for (int j = 0; j < 20; j++)
                 {
                     AddTile(50 * i, 50 * j);
+                    if (Constants.random.Next() % 5 == 0)
+                    {
+                        GetTile(50 * i, 50 * j).Wall = new Wall(false);
+                    }
                 }
             }
+            
 
             Character testCharacter = new Character(new Location(500, 300), this);
             AddCharacter(testCharacter);
@@ -42,10 +47,82 @@ namespace ColonyBuilder.GameCode
             }
         }
 
+        public Tile GetTile(int x, int y)
+        {
+            return GetTile(new Location(x, y));
+        }
+        public Tile GetTile(Location location)
+        {
+            if (Tiles.ContainsKey(location.ToString()))
+            {
+                return Tiles[location.ToString()];
+            }
+            return null;
+        }
+
         public void AddTile(int x, int y)
         {
-            Tile newTile = new Tile(new Location(x, y));
-            Tiles.Add("" + x + "-" + y, newTile);
+            AddTile(new Location(x, y));
+        }
+        public void AddTile(Location location)
+        {
+            Tile newTile = new Tile(location);
+            Tiles.Add(newTile.Location.ToString(), newTile);
+            newTile.AdjacentTiles = GetAdjacentTiles(location);
+            
+            foreach (Constants.Direction direction in newTile.AdjacentTiles.Keys)
+            {
+                newTile.AdjacentTiles[direction].AdjacentTiles.Add(Constants.oppositeDirection(direction), newTile);
+            }
+        }
+
+        private Dictionary<Constants.Direction, Tile> GetAdjacentTiles(Location center)
+        {
+            Dictionary<Constants.Direction, Tile> tiles = new Dictionary<Constants.Direction, Tile>();
+
+            Tile northTile = GetTile(new Location(center.X, center.Y - 50));
+            Tile northEastTile = GetTile(new Location(center.X + 50, center.Y - 50));
+            Tile eastTile = GetTile(new Location(center.X + 50, center.Y));
+            Tile southEastTile = GetTile(new Location(center.X + 50, center.Y + 50));
+            Tile southTile = GetTile(new Location(center.X, center.Y + 50));
+            Tile southWestTile = GetTile(new Location(center.X - 50, center.Y + 50));
+            Tile westTile = GetTile(new Location(center.X - 50, center.Y));
+            Tile northWestTile = GetTile(new Location(center.X - 50, center.Y - 50));
+
+            if (northTile != null)
+            {
+                tiles.Add(Constants.Direction.North, northTile);
+            }
+            if (northEastTile != null)
+            {
+                tiles.Add(Constants.Direction.NorthEast, northEastTile);
+            }
+            if (northWestTile != null)
+            {
+                tiles.Add(Constants.Direction.NorthWest, northWestTile);
+            }
+            if (southTile != null)
+            {
+                tiles.Add(Constants.Direction.South, southTile);
+            }
+            if (southEastTile != null)
+            {
+                tiles.Add(Constants.Direction.SouthEast, southEastTile);
+            }
+            if (southWestTile != null)
+            {
+                tiles.Add(Constants.Direction.SouthWest, southWestTile);
+            }
+            if (eastTile != null)
+            {
+                tiles.Add(Constants.Direction.East, eastTile);
+            }
+            if (westTile != null)
+            {
+                tiles.Add(Constants.Direction.West, westTile);
+            }
+
+            return tiles;
         }
 
         public void Update(int timeDifference)
