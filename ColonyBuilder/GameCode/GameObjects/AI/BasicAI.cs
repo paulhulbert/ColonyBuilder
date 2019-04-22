@@ -31,28 +31,47 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
 
             if (character.Location.Equals(testGoal1) && goingToTestGoal1)
             {
-                goingToTestGoal1 = false;
+                //goingToTestGoal1 = false;
             }
             if (character.Location.Equals(testGoal2) && !goingToTestGoal1)
             {
-                goingToTestGoal1 = true;
+                //goingToTestGoal1 = true;
             }
 
 
             Location goal = goingToTestGoal1 ? testGoal1 : testGoal2;
 
-            List<Constants.Direction> path = FindPathFromTo(character.Location, goal);
+            //List<Constants.Direction> path = FindPathFromTo(character.Location, delegate (Tile tile) { return tile.Location.Equals(goal); });
 
-            if (path != null)
+            List<Constants.Direction> path = FindPathFromTo(character.Location, delegate (Tile tile) {
+                foreach (Tile adjacentTile in tile.AdjacentTiles.Values)
+                {
+                    if (adjacentTile.Wall != null && adjacentTile.Wall.Items.Count > 0)
+                    {
+                        foreach (Item item in adjacentTile.Wall.Items)
+                        {
+                            String targetItem = goingToTestGoal1 ? "Food" : "Gold";
+                            if (item.Name.Equals(targetItem))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            });
+
+            if (path != null && path.Count > 0)
             {
                 CurrentOrder = new Order(path[0], "Moving East");
             } else
             {
                 CurrentOrder = new Order("Wait");
+                goingToTestGoal1 = !goingToTestGoal1;
             }
         }
 
-        private List<Constants.Direction> FindPathFromTo(Location from, Location to)
+        private List<Constants.Direction> FindPathFromTo(Location from, Predicate<Tile> toPredicate)
         {
             List<Constants.Direction> directions = new List<Constants.Direction>();
             MappingNode lastNode = null;
@@ -74,10 +93,11 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
                 List<Tile> newTilesToSearch = new List<Tile>();
                 foreach (Tile tile in tilesToSearch)
                 {
-                    if (tile.Location.Equals(to))
+                    if (toPredicate(tile))
                     {
+                        if (lastNode == null || GetPathDistance(paths, lastNode) > GetPathDistance(paths, paths[tile]))
                         lastNode = paths[tile];
-                        break;
+                        continue;
                     }
                     foreach (Constants.Direction adjacentDirection in tile.AdjacentTiles.Keys)
                     {

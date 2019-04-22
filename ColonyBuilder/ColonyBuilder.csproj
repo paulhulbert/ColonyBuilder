@@ -56,6 +56,7 @@
     <Compile Include="GameCode\GameObjects\AI\MappingNode.cs" />
     <Compile Include="GameCode\GameObjects\AI\Order.cs" />
     <Compile Include="GameCode\GameObjects\Character.cs" />
+    <Compile Include="GameCode\GameObjects\Item.cs" />
     <Compile Include="GameCode\GameObjects\Team.cs" />
     <Compile Include="GameCode\GameObjects\Tile.cs" />
     <Compile Include="GameCode\GameObjects\Wall.cs" />

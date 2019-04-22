@@ -16,6 +16,8 @@ namespace ColonyBuilder.GameCode
 
         public GameState()
         {
+
+            int testCounter = 0;
             for (int i = 0; i < 20; i++)
             {
                 for (int j = 0; j < 20; j++)
@@ -23,7 +25,19 @@ namespace ColonyBuilder.GameCode
                     AddTile(50 * i, 50 * j);
                     if (Constants.random.Next() % 4 == 0)
                     {
+                        testCounter++;
                         GetTile(50 * i, 50 * j).Wall = new Wall(true);
+                        if (testCounter == 10 || testCounter == 70) 
+                        {
+                            GetTile(50 * i, 50 * j).Wall.Items.Add(new Item(new Sprite(Color.Red), "Food"));
+                            GetTile(50 * i, 50 * j).Wall.ShowItems = true;
+                            Console.WriteLine("Food: " + GetTile(50 * i, 50 * j).Location);
+                        }
+                        if (testCounter == 50 || testCounter == 90)
+                        {
+                            GetTile(50 * i, 50 * j).Wall.Items.Add(new Item(new Sprite(Color.Yellow), "Gold"));
+                            GetTile(50 * i, 50 * j).Wall.ShowItems = true;
+                        }
                     }
                 }
             }
