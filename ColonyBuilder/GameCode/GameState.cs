@@ -21,9 +21,9 @@ namespace ColonyBuilder.GameCode
                 for (int j = 0; j < 20; j++)
                 {
                     AddTile(50 * i, 50 * j);
-                    if (Constants.random.Next() % 5 == 0)
+                    if (Constants.random.Next() % 4 == 0)
                     {
-                        GetTile(50 * i, 50 * j).Wall = new Wall(false);
+                        GetTile(50 * i, 50 * j).Wall = new Wall(true);
                     }
                 }
             }

@@ -28,11 +28,6 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
 
         public void Evaluate()
         {
-            //foreach (Constants.Direction dir in FindPathFromTo(testGoal1, testGoal2))
-            //{
-            //    Console.Write(dir + ", ");
-            //}
-            //Console.WriteLine();
 
             if (character.Location.Equals(testGoal1) && goingToTestGoal1)
             {
@@ -45,29 +40,15 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
 
 
             Location goal = goingToTestGoal1 ? testGoal1 : testGoal2;
-            
-            CurrentOrder = new Order(FindPathFromTo(character.Location, goal)[0], "Moving East");
-            return;
 
-            if (goal.X > character.Location.X)
+            List<Constants.Direction> path = FindPathFromTo(character.Location, goal);
+
+            if (path != null)
             {
-                CurrentOrder = new Order(Constants.Direction.East, "Moving East");
-                return;
-            }
-            if (goal.X < character.Location.X)
+                CurrentOrder = new Order(path[0], "Moving East");
+            } else
             {
-                CurrentOrder = new Order(Constants.Direction.West, "Moving West");
-                return;
-            }
-            if (goal.Y < character.Location.Y)
-            {
-                CurrentOrder = new Order(Constants.Direction.North, "Moving North");
-                return;
-            }
-            if (goal.Y > character.Location.Y)
-            {
-                CurrentOrder = new Order(Constants.Direction.South, "Moving South");
-                return;
+                CurrentOrder = new Order("Wait");
             }
         }
 
@@ -80,7 +61,7 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
             List<Tile> tilesToSearch = new List<Tile>();
             tilesToSearch.Add(gameState.GetTile(from));
 
-            while (lastNode == null || GetPathDistance(paths, lastNode) > tilesToSearch.Select(tile =>
+            while (tilesToSearch.Count > 0 && (lastNode == null || GetPathDistance(paths, lastNode) > tilesToSearch.Select(tile =>
             {
                 if (paths.ContainsKey(tile)) {
                     return GetPathDistance(paths, paths[tile]);
@@ -88,7 +69,7 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
                 {
                     return 99999999;
                 }
-            }).Min())
+            }).Min()))
             {
                 List<Tile> newTilesToSearch = new List<Tile>();
                 foreach (Tile tile in tilesToSearch)
@@ -100,24 +81,32 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
                     }
                     foreach (Constants.Direction adjacentDirection in tile.AdjacentTiles.Keys)
                     {
-                        if (paths.ContainsKey(tile.AdjacentTiles[adjacentDirection]))
+                        if (CanMoveAdjacentDirection(tile, adjacentDirection))
                         {
-                            if (GetPathDistance(paths, paths[tile]) + (Constants.IsDiagonal(adjacentDirection) ? 1.4 : 1.0) < GetPathDistance(paths, paths[tile.AdjacentTiles[adjacentDirection]]))
+                            if (paths.ContainsKey(tile.AdjacentTiles[adjacentDirection]))
                             {
-                                paths[tile.AdjacentTiles[adjacentDirection]].previousTile = tile;
-                                paths[tile.AdjacentTiles[adjacentDirection]].previousMove = adjacentDirection;
+                                if (GetPathDistance(paths, paths[tile]) + (Constants.IsDiagonal(adjacentDirection) ? 1.4 : 1.0) < GetPathDistance(paths, paths[tile.AdjacentTiles[adjacentDirection]]))
+                                {
+                                    paths[tile.AdjacentTiles[adjacentDirection]].previousTile = tile;
+                                    paths[tile.AdjacentTiles[adjacentDirection]].previousMove = adjacentDirection;
+                                }
                             }
-                        }
-                        else
-                        {
-                            paths.Add(tile.AdjacentTiles[adjacentDirection], new MappingNode(tile, adjacentDirection));
-                            newTilesToSearch.Add(tile.AdjacentTiles[adjacentDirection]);
+                            else
+                            {
+                                paths.Add(tile.AdjacentTiles[adjacentDirection], new MappingNode(tile, adjacentDirection));
+                                newTilesToSearch.Add(tile.AdjacentTiles[adjacentDirection]);
+                            }
                         }
                     }
                 }
                 tilesToSearch = newTilesToSearch;
             }
 
+            if (lastNode == null)
+            {
+                return null;
+            }
+            
             while (lastNode.previousTile != null)
             {
                 directions.Add(lastNode.previousMove);
@@ -125,6 +114,31 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
             }
             directions.Reverse();
             return directions;
+        }
+
+        private bool CanMoveAdjacentDirection(Tile tile, Constants.Direction adjacentDirection)
+        {
+            bool diagonalsSafe = true;
+            if (Constants.IsDiagonal(adjacentDirection))
+            {
+                if (adjacentDirection == Constants.Direction.NorthEast)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.North) && CanMoveAdjacentDirection(tile, Constants.Direction.East);
+                }
+                if (adjacentDirection == Constants.Direction.NorthWest)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.North) && CanMoveAdjacentDirection(tile, Constants.Direction.West);
+                }
+                if (adjacentDirection == Constants.Direction.SouthEast)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.South) && CanMoveAdjacentDirection(tile, Constants.Direction.East);
+                }
+                if (adjacentDirection == Constants.Direction.SouthWest)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.South) && CanMoveAdjacentDirection(tile, Constants.Direction.West);
+                }
+            }
+            return (tile.AdjacentTiles[adjacentDirection].Wall == null || !tile.AdjacentTiles[adjacentDirection].Wall.Collidable) && diagonalsSafe;
         }
 
         private double GetPathDistance(Dictionary<Tile, MappingNode> paths, MappingNode node)

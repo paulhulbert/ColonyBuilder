@@ -11,7 +11,8 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
         public enum OrderType
         {
             Move,
-            Interact
+            Interact,
+            Wait
         }
 
         private Constants.Direction move;
@@ -36,6 +37,12 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
             this.move = move;
             this.infoText = infoText;
             type = OrderType.Move;
+        }
+
+        public Order(string infoText)
+        {
+            this.infoText = infoText;
+            type = OrderType.Wait;
         }
     }
 }
