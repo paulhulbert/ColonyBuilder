@@ -13,13 +13,22 @@ namespace ColonyBuilder.GameCode.GameObjects
     {
         private String teamName = "Player";  //Change this later to be set by constructor
         private BasicAI basicAI;
-        private double speed = 100; // 50 == 1 tile per second
+        private double speed = 150; // 50 == 1 tile per second
+        private int maxInventory = 10;
 
         public string TeamName { get => teamName; set => teamName = value; }
+        public int MaxInventory { get => maxInventory; set => maxInventory = value; }
 
         public Character(Location location, GameState gameState) : base(new Sprite(Color.Blue), location)
         {
             basicAI = new BasicAI(this, gameState);
+        }
+
+        public int GetFreeInventorySpace()
+        {
+            int currentWeight = Items.Select(item => item.Weight).Sum();
+
+            return MaxInventory - currentWeight;
         }
 
         private bool IsCharacterOnTile()
@@ -51,50 +60,63 @@ namespace ColonyBuilder.GameCode.GameObjects
 
             if (direction == Constants.Direction.East)
             {
-                Location.X += ((double)timeDifference / 1000) * 100;
+                Location.X += ((double)timeDifference / 1000) * speed;
             }
             if (direction == Constants.Direction.West)
             {
-                Location.X -= ((double)timeDifference / 1000) * 100;
+                Location.X -= ((double)timeDifference / 1000) * speed;
             }
             if (direction == Constants.Direction.North)
             {
-                Location.Y -= ((double)timeDifference / 1000) * 100;
+                Location.Y -= ((double)timeDifference / 1000) * speed;
             }
             if (direction == Constants.Direction.South)
             {
-                Location.Y += ((double)timeDifference / 1000) * 100;
+                Location.Y += ((double)timeDifference / 1000) * speed;
             }
             if (direction == Constants.Direction.NorthEast)
             {
-                Location.X += ((double)timeDifference / 1000) * 100 / 1.4;
-                Location.Y -= ((double)timeDifference / 1000) * 100 / 1.4;
+                Location.X += ((double)timeDifference / 1000) * speed / 1.4;
+                Location.Y -= ((double)timeDifference / 1000) * speed / 1.4;
             }
             if (direction == Constants.Direction.NorthWest)
             {
-                Location.X -= ((double)timeDifference / 1000) * 100 / 1.4;
-                Location.Y -= ((double)timeDifference / 1000) * 100 / 1.4;
+                Location.X -= ((double)timeDifference / 1000) * speed / 1.4;
+                Location.Y -= ((double)timeDifference / 1000) * speed / 1.4;
             }
             if (direction == Constants.Direction.SouthEast)
             {
-                Location.X += ((double)timeDifference / 1000) * 100 / 1.4;
-                Location.Y += ((double)timeDifference / 1000) * 100 / 1.4;
+                Location.X += ((double)timeDifference / 1000) * speed / 1.4;
+                Location.Y += ((double)timeDifference / 1000) * speed / 1.4;
             }
             if (direction == Constants.Direction.SouthWest)
             {
-                Location.X -= ((double)timeDifference / 1000) * 100 / 1.4;
-                Location.Y += ((double)timeDifference / 1000) * 100 / 1.4;
+                Location.X -= ((double)timeDifference / 1000) * speed / 1.4;
+                Location.Y += ((double)timeDifference / 1000) * speed / 1.4;
             }
 
             LockToTile(startingLocation);
             
         }
 
+        private void FollowInteractOrder(int timeDifference)
+        {
+            Interaction interaction = basicAI.CurrentOrder.Interaction;
+            interaction.Update(timeDifference);
+            if (interaction.InteractionFinished)
+            {
+                basicAI.CurrentOrder = new Order("Wait");
+            }
+        }
+
         public void Update(int timeDifference)
         {
             if (IsCharacterOnTile())
             {
-                basicAI.Evaluate();
+                if (basicAI.CurrentOrder.Type != Order.OrderType.Interact)
+                {
+                    basicAI.Evaluate();
+                }
                 if (basicAI.CurrentOrder.Move == Constants.Direction.East)
                 {
                     Sprite.ImageColor = Color.Blue;
@@ -132,6 +154,9 @@ namespace ColonyBuilder.GameCode.GameObjects
             if (basicAI.CurrentOrder.Type == Order.OrderType.Move)
             {
                 FollowMoveOrder(timeDifference);
+            } else if (basicAI.CurrentOrder.Type == Order.OrderType.Interact)
+            {
+                FollowInteractOrder(timeDifference);
             }
         }
 

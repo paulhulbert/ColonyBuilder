@@ -1,4 +1,5 @@
 ﻿using ColonyBuilder.GameCode.GameObjects;
+using ColonyBuilder.GameCode.GameObjects.Walls;
 using ColonyBuilder.GameCode.Util;
 using System;
 using System.Collections.Generic;
@@ -23,22 +24,37 @@ namespace ColonyBuilder.GameCode
                 for (int j = 0; j < 20; j++)
                 {
                     AddTile(50 * i, 50 * j);
-                    if (Constants.random.Next() % 4 == 0)
+                    if (Constants.random.Next() % 3 == 0 && (i * 50 < 450 || i * 50 > 700 || j * 50 < 250 || j * 50 > 550))
                     {
                         testCounter++;
                         GetTile(50 * i, 50 * j).Wall = new Wall(true);
                         if (testCounter == 10 || testCounter == 70) 
                         {
-                            GetTile(50 * i, 50 * j).Wall.Items.Add(new Item(new Sprite(Color.Red), "Food"));
-                            GetTile(50 * i, 50 * j).Wall.ShowItems = true;
-                            Console.WriteLine("Food: " + GetTile(50 * i, 50 * j).Location);
+                            List<Item> items = new List<Item>();
+                            for (int itemCount = 0; itemCount < 3; itemCount++)
+                            {
+                                items.Add(new Item(new Sprite(Color.Red), "Food", 1));
+                            }
+                            GetTile(50 * i, 50 * j).Wall = new ResourcePile(items);
                         }
                         if (testCounter == 50 || testCounter == 90)
                         {
-                            GetTile(50 * i, 50 * j).Wall.Items.Add(new Item(new Sprite(Color.Yellow), "Gold"));
-                            GetTile(50 * i, 50 * j).Wall.ShowItems = true;
+                            List<Item> items = new List<Item>();
+                            for (int itemCount = 0; itemCount < 3; itemCount++)
+                            {
+                                items.Add(new Item(new Sprite(Color.Yellow), "Gold", 5));
+                            }
+                            GetTile(50 * i, 50 * j).Wall = new ResourcePile(items);
                         }
                     }
+                }
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    GetTile(new Location(600 + i * 50, 300 + j * 50)).Wall = new Storage();
                 }
             }
             
@@ -141,6 +157,10 @@ namespace ColonyBuilder.GameCode
 
         public void Update(int timeDifference)
         {
+            foreach (Tile tile in Tiles.Values)
+            {
+                tile.Update();
+            }
             foreach (Team team in Teams.Values)
             {
                 team.Update(timeDifference);

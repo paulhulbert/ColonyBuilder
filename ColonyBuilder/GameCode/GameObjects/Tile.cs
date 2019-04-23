@@ -28,6 +28,68 @@ namespace ColonyBuilder.GameCode.GameObjects
 
         public Dictionary<Constants.Direction, Tile> AdjacentTiles { get => adjacentTiles; set => adjacentTiles = value; }
 
+
+        public bool CanMoveAdjacentDirection(Constants.Direction adjacentDirection)
+        {
+            bool diagonalsSafe = true;
+            if (Constants.IsDiagonal(adjacentDirection))
+            {
+                if (adjacentDirection == Constants.Direction.NorthEast)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(Constants.Direction.North) && CanMoveAdjacentDirection(Constants.Direction.East);
+                }
+                if (adjacentDirection == Constants.Direction.NorthWest)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(Constants.Direction.North) && CanMoveAdjacentDirection(Constants.Direction.West);
+                }
+                if (adjacentDirection == Constants.Direction.SouthEast)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(Constants.Direction.South) && CanMoveAdjacentDirection(Constants.Direction.East);
+                }
+                if (adjacentDirection == Constants.Direction.SouthWest)
+                {
+                    diagonalsSafe = CanMoveAdjacentDirection(Constants.Direction.South) && CanMoveAdjacentDirection(Constants.Direction.West);
+                }
+            }
+            return (AdjacentTiles[adjacentDirection].Wall == null || !AdjacentTiles[adjacentDirection].Wall.Collidable) && diagonalsSafe;
+        }
+
+        public bool CanInteractWithAdjacentDirection(Constants.Direction adjacentDirection)
+        {
+            if (Constants.IsDiagonal(adjacentDirection))
+            {
+                if (adjacentDirection == Constants.Direction.NorthEast)
+                {
+                    return CanMoveAdjacentDirection(Constants.Direction.North) || CanMoveAdjacentDirection(Constants.Direction.East);
+                }
+                if (adjacentDirection == Constants.Direction.NorthWest)
+                {
+                    return CanMoveAdjacentDirection(Constants.Direction.North) || CanMoveAdjacentDirection(Constants.Direction.West);
+                }
+                if (adjacentDirection == Constants.Direction.SouthEast)
+                {
+                    return CanMoveAdjacentDirection(Constants.Direction.South) || CanMoveAdjacentDirection(Constants.Direction.East);
+                }
+                if (adjacentDirection == Constants.Direction.SouthWest)
+                {
+                    return CanMoveAdjacentDirection(Constants.Direction.South) || CanMoveAdjacentDirection(Constants.Direction.West);
+                }
+            }
+            return true;
+        }
+
+        public void Update()
+        {
+            if (wall != null)
+            {
+                wall.Update();
+                if (wall.ShouldDelete)
+                {
+                    wall = null;
+                }
+            }
+        }
+
         public override void Render(Graphics graphics)
         {
             Sprite.Render(graphics, Location.X, Location.Y, 50, 50, 0);

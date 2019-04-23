@@ -11,8 +11,9 @@ namespace ColonyBuilder.GameCode.GameObjects
     class Wall : GameObject
     {
         bool collidable;
-        List<Item> items = new List<Item>();
         bool showItems = false;
+        bool shouldDelete = false;
+        bool storable = false;
 
 
         public Wall(bool collidable) : base(new Sprite(Color.SaddleBrown), new Location(0,0))
@@ -21,15 +22,26 @@ namespace ColonyBuilder.GameCode.GameObjects
         }
 
         public bool Collidable { get => collidable; set => collidable = value; }
-        public List<Item> Items { get => items; set => items = value; }
         public bool ShowItems { get => showItems; set => showItems = value; }
+        public bool ShouldDelete { get => shouldDelete; set => shouldDelete = value; }
+        public bool Storable { get => storable; set => storable = value; }
+
+        public virtual void Update()
+        {
+
+        }
+
+        public virtual List<string> GetStorageTypes()
+        {
+            return new List<string>();
+        }
 
         public override void Render(Graphics graphics)
         {
             Sprite.Render(graphics, Location.X, Location.Y, 50, 50, 0);
-            if (ShowItems && items.Count > 0)
+            if (ShowItems && Items.Count > 0)
             {
-                items[0].Render(graphics, Location);
+                Items[0].Render(graphics, Location);
             }
         }
     }

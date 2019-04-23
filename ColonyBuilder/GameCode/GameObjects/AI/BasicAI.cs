@@ -12,10 +12,10 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
         private Character character;
         private GameState gameState;
         private Order currentOrder;
+        private bool storing = false;
 
         Location testGoal1 = new Location(200, 200);
         Location testGoal2 = new Location(800, 400);
-        bool goingToTestGoal1 = false;
 
         public BasicAI(Character character, GameState gameState)
         {
@@ -28,47 +28,101 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
 
         public void Evaluate()
         {
-
-            if (character.Location.Equals(testGoal1) && goingToTestGoal1)
+            if (character.GetFreeInventorySpace() == character.MaxInventory)
             {
-                //goingToTestGoal1 = false;
+                storing = false;
             }
-            if (character.Location.Equals(testGoal2) && !goingToTestGoal1)
+            Predicate<Tile> isTargetTile = null;
+
+            List<Constants.Direction> path = null;
+            if (!storing)
             {
-                //goingToTestGoal1 = true;
+                isTargetTile = AIPredicates.CheckClosestNonStorageTileWithItemsSizeLimit(new List<string>() { "Food", "Gold" }, character.GetFreeInventorySpace());
+
+                path = FindPathFromTo(character.Location, isTargetTile);
             }
+            
 
+            if (path == null)
+            {
+                isTargetTile = AIPredicates.CheckClosestStorageForItems(character.Items.Select(item => item.Name).ToList());
 
-            Location goal = goingToTestGoal1 ? testGoal1 : testGoal2;
-
-            //List<Constants.Direction> path = FindPathFromTo(character.Location, delegate (Tile tile) { return tile.Location.Equals(goal); });
-
-            List<Constants.Direction> path = FindPathFromTo(character.Location, delegate (Tile tile) {
-                foreach (Tile adjacentTile in tile.AdjacentTiles.Values)
-                {
-                    if (adjacentTile.Wall != null && adjacentTile.Wall.Items.Count > 0)
-                    {
-                        foreach (Item item in adjacentTile.Wall.Items)
-                        {
-                            String targetItem = goingToTestGoal1 ? "Food" : "Gold";
-                            if (item.Name.Equals(targetItem))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            });
+                path = FindPathFromTo(character.Location, isTargetTile);
+                storing = true;
+            }
 
             if (path != null && path.Count > 0)
             {
-                CurrentOrder = new Order(path[0], "Moving East");
+                CurrentOrder = new Order(path[0], "Moving");
             } else
             {
+                if (path != null)
+                {
+                    if (storing)
+                    {
+                        Tile targetTile = FindAdjacentTileThatMeetsRequirements(delegate (Tile adjacentTile)
+                        {
+                        if (adjacentTile.Wall != null && ( adjacentTile.Wall.GetStorageTypes() == null || adjacentTile.Wall.GetStorageTypes().Contains("Food") || adjacentTile.Wall.GetStorageTypes().Contains("Gold") ))
+                            {
+                                return true;
+                            }
+                            return false;
+                        });
+
+                        if (targetTile != null)
+                        {
+                            string itemName = character.Items[0].Name;
+                            if (targetTile.Wall.GetStorageTypes() != null)
+                            {
+                                itemName = targetTile.Wall.GetStorageTypes()[0];
+                            }
+                            CurrentOrder = new Order(new Interaction(character, targetTile.Wall, gameState, "Giving item", InteractionPredicates.GiveItem(itemName), 1000), "Giving item");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Tile targetTile = FindAdjacentTileThatMeetsRequirements(delegate (Tile adjacentTile)
+                        {
+                            if (adjacentTile.Wall != null && !adjacentTile.Wall.Storable && adjacentTile.Wall.Items.Count > 0)
+                            {
+                                foreach (Item item in adjacentTile.Wall.Items)
+                                {
+                                    if (item.Name.Equals("Food") || item.Name.Equals("Gold"))
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                            return false;
+                        });
+
+                        if (targetTile != null)
+                        {
+                            CurrentOrder = new Order(new Interaction(character, targetTile.Wall, gameState, "Taking item", InteractionPredicates.TakeFirstItem(), 1000), "Taking item");
+                            return;
+                        }
+                    }
+                }
                 CurrentOrder = new Order("Wait");
-                goingToTestGoal1 = !goingToTestGoal1;
             }
+        }
+
+        private Tile FindAdjacentTileThatMeetsRequirements(Predicate<Tile> requirements)
+        {
+            Tile tile = gameState.GetTile(character.Location);
+            foreach (Constants.Direction adjacentDirection in tile.AdjacentTiles.Keys)
+            {
+                if (tile.CanInteractWithAdjacentDirection(adjacentDirection))
+                {
+                    Tile adjacentTile = tile.AdjacentTiles[adjacentDirection];
+                    if (requirements(adjacentTile))
+                    {
+                        return adjacentTile;
+                    }
+                }
+            }
+            return null;
         }
 
         private List<Constants.Direction> FindPathFromTo(Location from, Predicate<Tile> toPredicate)
@@ -101,7 +155,7 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
                     }
                     foreach (Constants.Direction adjacentDirection in tile.AdjacentTiles.Keys)
                     {
-                        if (CanMoveAdjacentDirection(tile, adjacentDirection))
+                        if (tile.CanMoveAdjacentDirection(adjacentDirection))
                         {
                             if (paths.ContainsKey(tile.AdjacentTiles[adjacentDirection]))
                             {
@@ -134,31 +188,6 @@ namespace ColonyBuilder.GameCode.GameObjects.AI
             }
             directions.Reverse();
             return directions;
-        }
-
-        private bool CanMoveAdjacentDirection(Tile tile, Constants.Direction adjacentDirection)
-        {
-            bool diagonalsSafe = true;
-            if (Constants.IsDiagonal(adjacentDirection))
-            {
-                if (adjacentDirection == Constants.Direction.NorthEast)
-                {
-                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.North) && CanMoveAdjacentDirection(tile, Constants.Direction.East);
-                }
-                if (adjacentDirection == Constants.Direction.NorthWest)
-                {
-                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.North) && CanMoveAdjacentDirection(tile, Constants.Direction.West);
-                }
-                if (adjacentDirection == Constants.Direction.SouthEast)
-                {
-                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.South) && CanMoveAdjacentDirection(tile, Constants.Direction.East);
-                }
-                if (adjacentDirection == Constants.Direction.SouthWest)
-                {
-                    diagonalsSafe = CanMoveAdjacentDirection(tile, Constants.Direction.South) && CanMoveAdjacentDirection(tile, Constants.Direction.West);
-                }
-            }
-            return (tile.AdjacentTiles[adjacentDirection].Wall == null || !tile.AdjacentTiles[adjacentDirection].Wall.Collidable) && diagonalsSafe;
         }
 
         private double GetPathDistance(Dictionary<Tile, MappingNode> paths, MappingNode node)
